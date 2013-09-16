@@ -141,6 +141,16 @@ int main(int argc, char **argv)
         roomIndex--;
     }
     
+    // test map
+    for (int i=globalArgs.numFloors-1; i<=0; i--){
+        for (int j=0; j<globalArgs.roomSize; j++){
+            for (int k=0; k<globalArgs.roomSize; k++){
+                cout << board[j][k][i].character;
+            }
+            cout << '\n';
+        }
+        cout << "//level " << i << '\n';
+    }
     
     return 0;
 }
