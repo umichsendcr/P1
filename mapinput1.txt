@@ -1,0 +1,14 @@
+M
+4
+2
+//sample M mode input file with two 4x4 levels
+//level 1
+....
+#...
+E#..
+#...
+//level 0
+.H..
+....
+E..S
+#..#
