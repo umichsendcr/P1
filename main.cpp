@@ -32,18 +32,12 @@ void printError1(){
     return;
 }
 
-
-
-
-
-
-
 int main(int argc, char **argv)
 {
     // initialize global arguments
     globalArgs.stack = false, globalArgs.queue = false;
     globalArgs.inMode = 0;
-    globalArgs.outMode = 0;
+    globalArgs.outMode = 'M';
     globalArgs.roomSize = 0;
     globalArgs.numFloors = 0;
     
@@ -56,7 +50,7 @@ int main(int argc, char **argv)
                     globalArgs.stack = true;
                 } else {
                     printError1();
-                    EXIT_FAILURE;
+                    return 1;
                 }
                 break;
             case 'q':
@@ -64,7 +58,7 @@ int main(int argc, char **argv)
                     globalArgs.queue = true;
                 } else {
                     printError1();
-                    EXIT_FAILURE;
+                    return 1;
                 }
                 break;
             case 'o':
@@ -77,11 +71,12 @@ int main(int argc, char **argv)
                 << "'-q' or '--queue': if this switch is set, use queue based routing scheme." << '\n'
                 << "'-o' or '--output' (M|L): indicates whether you'd like to use map or coordinate output." << '\n'
                 << "'-h' or '--help': prints this message and ends the program." << '\n';
-                EXIT_SUCCESS;
+                return 0;
             default:
                 break;
         }
     }
+    
     
     return 0;
 }
