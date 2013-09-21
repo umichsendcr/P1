@@ -8,7 +8,7 @@
 
 #ifndef P1_P1_h
 #define P1_P1_h
-
+#include "P1Structures.h"
 using namespace std;
 
 /*
@@ -24,8 +24,15 @@ void printError1(){
  prints informative message to standard error if input character is not a legal map character
  */
 void printError2(){
-    cerr << "there is an invalid character on the map. abort program" << '\n';
+    cerr << "there is an invalid character on the map. abort program." << '\n';
     return;
+}
+
+/*
+ prints informative message to standard error if coordinates given in coordinate input mode are invalid
+ */
+void printError3(){
+    cerr << "one of the coordinates listed in the input file is invalid. abort program." << '\n';
 }
 
 /*
@@ -44,5 +51,19 @@ bool isValidCharacter(char c){
     }
 }
 
+/*
+ checks whether a coordinate is valid given the room size and number of levels of a map
+ */
+bool isValidCoordinate(int x, int y, int z){
+    if (x<0 || x>=globalArgs.roomSize){
+        return false;
+    }else if (y<0 || y>=globalArgs.roomSize){
+        return false;
+    }else if (z<0 || z>=globalArgs.numFloors){
+        return false;
+    } else {
+        return true;
+    }
+}
 
 #endif
