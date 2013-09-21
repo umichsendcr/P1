@@ -87,14 +87,17 @@ int main(int argc, char **argv)
             if (isValidCharacter(c)){
                 point newPoint = {c, false};
                 map[floorIndex/roomSize][rowIndex%roomSize][colIndex%roomSize] = newPoint;
+                cout << floorIndex << " " << rowIndex << " " << colIndex << endl;
                 colIndex++;
+                if (colIndex>0 && (colIndex%4 == 0)){
+                    rowIndex++;
+                    floorIndex--;
+                }
             } else {
                 printError2();
                 return 1;
             }
         }
-        rowIndex++;
-        floorIndex--;
     }
     
     
