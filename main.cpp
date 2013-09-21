@@ -2,70 +2,12 @@
 #include <getopt.h>
 #include <string>
 #include <sstream>
+#include <vector>
+#include "P1Functions.h"
+#include "P1Structures.h"
 
 using namespace std;
 
-// create global argument structure & define getopt_long option structure
-struct globalArgs_t{
-    bool stack;
-    bool queue;
-    char inMode;
-    char outMode;
-    int roomSize;
-    int numFloors;
-} globalArgs;
-
-struct option longOpts[] = {
-    {"stack", no_argument, NULL, 's'},
-    {"queue", no_argument, NULL, 'q'},
-    {"output", required_argument, NULL, 'o'},
-    {"help", no_argument, NULL, 'h'}
-};
-
-// create "point" structure template for each coordinate
-struct point {
-    int row;
-    int col;
-    int level;
-    char character;
-};
-
-// HELPER FUNCTIONS == == == == == == == == == == == == == == == == == == ==
-
-/* 
- prints informative message to standard error if more or less than one --stack or
- --queue flag is found on the command line
-*/
-void printError1(){
-    cerr << "you must choose between stack routing scheme or queue routing scheme, and you may not choose both or choose one twice. abort program." << '\n';
-    return;
-}
-
-/*
- prints informative message to standard error if input character is not a legal map character
-*/
-void printError2(){
-    cerr << "there is an invalid character on the map. abort program" << '\n';
-    return;
-}
-
-/*
- checks c to see if c is a legal map character
-*/
-bool isValidCharacter(char c){
-    switch (c) {
-        case '.':
-        case '#':
-        case 'S':
-        case 'H':
-        case 'E':
-            return true;
-        default:
-            return false;
-    }
-}
-
-// ==========================================================================
 int main(int argc, char **argv)
 {
     // initialize global arguments
@@ -74,22 +16,26 @@ int main(int argc, char **argv)
     globalArgs.outMode = 'M';
     globalArgs.roomSize = 0;
     globalArgs.numFloors = 0;
+    bool &stack = globalArgs.stack;
+    bool &queue = globalArgs.queue;
+    int &roomSize = globalArgs.roomSize;
+    int &numFloors = globalArgs.numFloors;
     
     // get command line arguments
     int index = 0, opt = 0;
     while ((opt = getopt_long(argc, argv, "sqo:h", longOpts, &index)) != -1) {
         switch (opt) {
             case 's':
-                if (!globalArgs.queue && !globalArgs.stack){
-                    globalArgs.stack = true;
+                if (!queue && !stack){
+                    stack = true;
                 } else {
                     printError1();
                     return 1;
                 }
                 break;
             case 'q':
-                if (!globalArgs.stack && !globalArgs.queue){
-                    globalArgs.queue = true;
+                if (!stack && !queue){
+                    queue = true;
                 } else {
                     printError1();
                     return 1;
@@ -110,19 +56,28 @@ int main(int argc, char **argv)
                 break;
         }
     }
-    if (!globalArgs.stack && !globalArgs.queue){
+    if (!stack && !queue){
         printError1();
         return 1;
     }
     
-    // read input file
+    // initialize 3D vector container
     cin >> globalArgs.inMode;
-    cin >> globalArgs.roomSize;
-    cin >> globalArgs.numFloors;
+    cin >> roomSize;
+    cin >> numFloors;
     string line;
     char c;
-    point board[globalArgs.roomSize][globalArgs.roomSize][globalArgs.numFloors];
-    int rowIndex = 0; int colIndex = 0; int roomIndex = ((globalArgs.roomSize * globalArgs.numFloors) - 1);
+    vector<vector<vector<point> > > map;
+    map.resize(numFloors);
+    for (int i=0; i<numFloors; i++){
+        map[i].resize(roomSize);
+        for (int j=0; j<roomSize; j++){
+            map[i][j].resize(roomSize);
+        }
+    }
+    
+    // read input file (map mode)
+    int colIndex=0, rowIndex=0, floorIndex=(roomSize*numFloors)-1;
     while (getline(cin, line)){
         if (line[0] == '/'){
             continue;
@@ -130,7 +85,8 @@ int main(int argc, char **argv)
         istringstream is (line);
         while (is >> c) {
             if (isValidCharacter(c)){
-                board[colIndex%globalArgs.roomSize][rowIndex%globalArgs.roomSize][roomIndex%globalArgs.roomSize].character = c;
+                point newPoint = {c, false};
+                map[floorIndex/roomSize][rowIndex%roomSize][colIndex%roomSize] = newPoint;
                 colIndex++;
             } else {
                 printError2();
@@ -138,19 +94,9 @@ int main(int argc, char **argv)
             }
         }
         rowIndex++;
-        roomIndex--;
+        floorIndex--;
     }
     
-    // test map
-    for (int i=globalArgs.numFloors-1; i<=0; i--){
-        for (int j=0; j<globalArgs.roomSize; j++){
-            for (int k=0; k<globalArgs.roomSize; k++){
-                cout << board[j][k][i].character;
-            }
-            cout << '\n';
-        }
-        cout << "//level " << i << '\n';
-    }
     
     return 0;
 }
