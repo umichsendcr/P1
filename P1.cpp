@@ -250,9 +250,66 @@ int main(int argc, char **argv)
                 }
             }
         }
+    // sorting algorithm (queue-based)
     } else {
-        
+        while (!foundHanger && !deq.empty()){
+            point temp = deq.front();
+            deq.pop_front();
+            /*
+             checks whether coordinate about to be queued is
+             - A: a valid point on the map
+             - B: a valid character (not '#')
+             - C: a point that has not previously been queued
+             */
+            if (temp.row > 0 && isValidQueueChar(map[temp.level][temp.row-1][temp.col].character) && !map[temp.level][temp.row-1][temp.col].beenQueued){
+                deq.push_back(map[temp.level][temp.row-1][temp.col]);
+                map[temp.level][temp.row-1][temp.col].beenQueued = true;
+                map[temp.level][temp.row-1][temp.col].queuedFrom = 'n';
+                if (deq.back().character == 'H'){
+                    foundHanger = true;
+                    continue;
+                }
+            }
+            if (temp.col < roomSize-1 && isValidQueueChar(map[temp.level][temp.row][temp.col+1].character) && !map[temp.level][temp.row][temp.col+1].beenQueued){
+                deq.push_back(map[temp.level][temp.row][temp.col+1]);
+                map[temp.level][temp.row][temp.col+1].beenQueued = true;
+                map[temp.level][temp.row][temp.col+1].queuedFrom = 'e';
+                if (deq.back().character == 'H'){
+                    foundHanger = true;
+                    continue;
+                }
+            }
+            if (temp.row < roomSize-1 && isValidQueueChar(map[temp.level][temp.row+1][temp.col].character) && !map[temp.level][temp.row+1][temp.col].beenQueued){
+                deq.push_back(map[temp.level][temp.row+1][temp.col]);
+                map[temp.level][temp.row+1][temp.col].beenQueued = true;
+                map[temp.level][temp.row+1][temp.col].queuedFrom = 's';
+                if (deq.back().character == 'H'){
+                    foundHanger = true;
+                    continue;
+                }
+            }
+            if (temp.col > 0 && isValidQueueChar(map[temp.level][temp.row][temp.col-1].character) && !map[temp.level][temp.row][temp.col-1].beenQueued){
+                deq.push_back(map[temp.level][temp.row][temp.col-1]);
+                map[temp.level][temp.row][temp.col-1].beenQueued = true;
+                map[temp.level][temp.row][temp.col-1].queuedFrom = 'w';
+                if (deq.back().character == 'H'){
+                    foundHanger = true;
+                    continue;
+                }
+            }
+            if (temp.character == 'E'){
+                for (int i=0; i<numFloors; i++){
+                    if (i != temp.level && map[i][temp.row][temp.col].character == 'E' && !map[i][temp.row][temp.col].beenQueued){
+                        deq.push_back(map[i][temp.row][temp.col]);
+                        map[i][temp.row][temp.col].beenQueued = true;
+                        map[i][temp.row][temp.col].queuedFrom = temp.level;
+                    }
+                }
+            }
+        }
     }
+    
+    
     return 0;
 }
 
