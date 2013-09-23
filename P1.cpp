@@ -31,6 +31,7 @@ struct point {
     int col;
     int level;
     char character;
+    char queuedFrom;
     bool beenQueued;
 };
 
@@ -130,7 +131,7 @@ int main(int argc, char **argv)
             istringstream is (line);
             while (is >> c) {
                 if (isValidCharacter(c)){
-                    point newPoint = {rowIndex%roomSize, colIndex%roomSize, floorIndex/roomSize, c, false};
+                    point newPoint = {rowIndex%roomSize, colIndex%roomSize, floorIndex/roomSize, c, '0', false};
                     map[floorIndex/roomSize][rowIndex%roomSize][colIndex%roomSize] = newPoint;
                     if (c == 'S'){
                         startRow = rowIndex%roomSize;
@@ -154,7 +155,7 @@ int main(int argc, char **argv)
         for (int i=0; i<numFloors; i++){
             for (int j=0; j<roomSize; j++){
                 for (int k=0; k<roomSize; k++){
-                    point temp = {j, k, i, '.', false};
+                    point temp = {j, k, i, '.', '0', false};
                     map[i][j][k] = temp;
                 }
             }
@@ -189,11 +190,11 @@ int main(int argc, char **argv)
     deque<point> deq;
     deq.push_back(map[startLevel][startRow][startCol]);
     map[startLevel][startRow][startCol].beenQueued = true;
+    bool foundHanger = false;
     
     // sorting algorithm (stack-based)
     if (stack){
-        bool foundHanger = false;
-        while (!foundHanger){
+        while (!foundHanger && !deq.empty()){
             point temp = deq.back();
             deq.pop_back();
             
@@ -206,6 +207,7 @@ int main(int argc, char **argv)
             if (temp.row > 0 && isValidQueueChar(map[temp.level][temp.row-1][temp.col].character) && !map[temp.level][temp.row-1][temp.col].beenQueued){
                 deq.push_back(map[temp.level][temp.row-1][temp.col]);
                 map[temp.level][temp.row-1][temp.col].beenQueued = true;
+                map[temp.level][temp.row-1][temp.col].queuedFrom = 'n';
                 if (deq.back().character == 'H'){
                     foundHanger = true;
                     continue;
@@ -214,6 +216,7 @@ int main(int argc, char **argv)
             if (temp.col < roomSize-1 && isValidQueueChar(map[temp.level][temp.row][temp.col+1].character) && !map[temp.level][temp.row][temp.col+1].beenQueued){
                 deq.push_back(map[temp.level][temp.row][temp.col+1]);
                 map[temp.level][temp.row][temp.col+1].beenQueued = true;
+                map[temp.level][temp.row][temp.col+1].queuedFrom = 'e';
                 if (deq.back().character == 'H'){
                     foundHanger = true;
                     continue;
@@ -222,6 +225,7 @@ int main(int argc, char **argv)
             if (temp.row < roomSize-1 && isValidQueueChar(map[temp.level][temp.row+1][temp.col].character) && !map[temp.level][temp.row+1][temp.col].beenQueued){
                 deq.push_back(map[temp.level][temp.row+1][temp.col]);
                 map[temp.level][temp.row+1][temp.col].beenQueued = true;
+                map[temp.level][temp.row+1][temp.col].queuedFrom = 's';
                 if (deq.back().character == 'H'){
                     foundHanger = true;
                     continue;
@@ -230,6 +234,7 @@ int main(int argc, char **argv)
             if (temp.col > 0 && isValidQueueChar(map[temp.level][temp.row][temp.col-1].character) && !map[temp.level][temp.row][temp.col-1].beenQueued){
                 deq.push_back(map[temp.level][temp.row][temp.col-1]);
                 map[temp.level][temp.row][temp.col-1].beenQueued = true;
+                map[temp.level][temp.row][temp.col-1].queuedFrom = 'w';
                 if (deq.back().character == 'H'){
                     foundHanger = true;
                     continue;
@@ -237,53 +242,16 @@ int main(int argc, char **argv)
             }
             if (temp.character == 'E'){
                 for (int i=0; i<numFloors; i++){
-                    if (i != temp.level && map[i][temp.row][temp.level].character == 'E'){
-                        if (temp.row > 0 && isValidQueueChar(map[i][temp.row-1][temp.col].character) && !map[i][temp.row-1][temp.col].beenQueued){
-                            deq.push_back(map[i][temp.row-1][temp.col]);
-                            map[i][temp.row-1][temp.col].beenQueued = true;
-                            if (deq.back().character == 'H'){
-                                foundHanger = true;
-                                continue;
-                            }
-                        }
-                        if (temp.col < roomSize-1 && isValidQueueChar(map[i][temp.row][temp.col+1].character) && !map[i][temp.row][temp.col+1].beenQueued){
-                            deq.push_back(map[i][temp.row][temp.col+1]);
-                            map[i][temp.row][temp.col+1].beenQueued = true;
-                            if (deq.back().character == 'H'){
-                                foundHanger = true;
-                                continue;
-                            }
-                        }
-                        if (temp.row < roomSize-1 && isValidQueueChar(map[i][temp.row+1][temp.col].character) && !map[i][temp.row+1][temp.col].beenQueued){
-                            deq.push_back(map[i][temp.row+1][temp.col]);
-                            map[i][temp.row+1][temp.col].beenQueued = true;
-                            if (deq.back().character == 'H'){
-                                foundHanger = true;
-                                continue;
-                            }
-                        }
-                        if (temp.col > 0 && isValidQueueChar(map[i][temp.row][temp.col-1].character) && !map[i][temp.row][temp.col-1].beenQueued){
-                            deq.push_back(map[i][temp.row][temp.col-1]);
-                            map[i][temp.row][temp.col-1].beenQueued = true;
-                            if (deq.back().character == 'H'){
-                                foundHanger = true;
-                                continue;
-                            }
-                        }
+                    if (i != temp.level && map[i][temp.row][temp.col].character == 'E' && !map[i][temp.row][temp.col].beenQueued){
+                        deq.push_back(map[i][temp.row][temp.col]);
+                        map[i][temp.row][temp.col].beenQueued = true;
+                        map[i][temp.row][temp.col].queuedFrom = temp.level;
                     }
                 }
             }
         }
-    }
-    
-    for (int i=0; i<globalArgs.numFloors; i++){
-        for (int j=0; j<globalArgs.roomSize; j++){
-            for (int k=0; k<globalArgs.roomSize; k++){
-                cout << map[i][j][k].beenQueued;
-            }
-            cout << endl;
-        }
-        cout << endl;
+    } else {
+        
     }
     return 0;
 }
