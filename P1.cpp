@@ -31,7 +31,7 @@ struct point {
     int col;
     int level;
     char character;
-    char queuedFrom;
+    string queuedFrom;
     bool beenQueued;
 };
 
@@ -131,7 +131,7 @@ int main(int argc, char **argv)
             istringstream is (line);
             while (is >> c) {
                 if (isValidCharacter(c)){
-                    point newPoint = {rowIndex%roomSize, colIndex%roomSize, floorIndex/roomSize, c, '0', false};
+                    point newPoint = {rowIndex%roomSize, colIndex%roomSize, floorIndex/roomSize, c, "", false};
                     map[floorIndex/roomSize][rowIndex%roomSize][colIndex%roomSize] = newPoint;
                     if (c == 'S'){
                         startRow = rowIndex%roomSize;
@@ -155,7 +155,7 @@ int main(int argc, char **argv)
         for (int i=0; i<numFloors; i++){
             for (int j=0; j<roomSize; j++){
                 for (int k=0; k<roomSize; k++){
-                    point temp = {j, k, i, '.', '0', false};
+                    point temp = {j, k, i, '.', "", false};
                     map[i][j][k] = temp;
                 }
             }
@@ -190,6 +190,7 @@ int main(int argc, char **argv)
     deque<point> deq;
     deq.push_back(map[startLevel][startRow][startCol]);
     map[startLevel][startRow][startCol].beenQueued = true;
+    int hangerRow, hangerCol, hangerLevel = 0;
     bool foundHanger = false;
     
     // sorting algorithm (stack-based)
@@ -197,46 +198,59 @@ int main(int argc, char **argv)
         while (!foundHanger && !deq.empty()){
             point temp = deq.back();
             deq.pop_back();
-            
             /*
-             checks whether coordinate about to be queued is 
-                - A: a valid point on the map
-                - B: a valid character (not '#')
-                - C: a point that has not previously been queued
-            */
+             checks whether coordinate about to be queued is
+             - A: a valid point on the map
+             - B: a valid character (not '#')
+             - C: a point that has not previously been queued
+             - D: is the hanger
+                - if yes, stores coordinates
+             */
             if (temp.row > 0 && isValidQueueChar(map[temp.level][temp.row-1][temp.col].character) && !map[temp.level][temp.row-1][temp.col].beenQueued){
                 deq.push_back(map[temp.level][temp.row-1][temp.col]);
                 map[temp.level][temp.row-1][temp.col].beenQueued = true;
-                map[temp.level][temp.row-1][temp.col].queuedFrom = 'n';
+                map[temp.level][temp.row-1][temp.col].queuedFrom = "n";
                 if (deq.back().character == 'H'){
                     foundHanger = true;
+                    hangerRow = deq.back().row;
+                    hangerCol = deq.back().col;
+                    hangerLevel = deq.back().level;
                     continue;
                 }
             }
             if (temp.col < roomSize-1 && isValidQueueChar(map[temp.level][temp.row][temp.col+1].character) && !map[temp.level][temp.row][temp.col+1].beenQueued){
                 deq.push_back(map[temp.level][temp.row][temp.col+1]);
                 map[temp.level][temp.row][temp.col+1].beenQueued = true;
-                map[temp.level][temp.row][temp.col+1].queuedFrom = 'e';
+                map[temp.level][temp.row][temp.col+1].queuedFrom = "e";
                 if (deq.back().character == 'H'){
                     foundHanger = true;
+                    hangerRow = deq.back().row;
+                    hangerCol = deq.back().col;
+                    hangerLevel = deq.back().level;
                     continue;
                 }
             }
             if (temp.row < roomSize-1 && isValidQueueChar(map[temp.level][temp.row+1][temp.col].character) && !map[temp.level][temp.row+1][temp.col].beenQueued){
                 deq.push_back(map[temp.level][temp.row+1][temp.col]);
                 map[temp.level][temp.row+1][temp.col].beenQueued = true;
-                map[temp.level][temp.row+1][temp.col].queuedFrom = 's';
+                map[temp.level][temp.row+1][temp.col].queuedFrom = "s";
                 if (deq.back().character == 'H'){
                     foundHanger = true;
+                    hangerRow = deq.back().row;
+                    hangerCol = deq.back().col;
+                    hangerLevel = deq.back().level;
                     continue;
                 }
             }
             if (temp.col > 0 && isValidQueueChar(map[temp.level][temp.row][temp.col-1].character) && !map[temp.level][temp.row][temp.col-1].beenQueued){
                 deq.push_back(map[temp.level][temp.row][temp.col-1]);
                 map[temp.level][temp.row][temp.col-1].beenQueued = true;
-                map[temp.level][temp.row][temp.col-1].queuedFrom = 'w';
+                map[temp.level][temp.row][temp.col-1].queuedFrom = "w";
                 if (deq.back().character == 'H'){
                     foundHanger = true;
+                    hangerRow = deq.back().row;
+                    hangerCol = deq.back().col;
+                    hangerLevel = deq.back().level;
                     continue;
                 }
             }
@@ -245,7 +259,7 @@ int main(int argc, char **argv)
                     if (i != temp.level && map[i][temp.row][temp.col].character == 'E' && !map[i][temp.row][temp.col].beenQueued){
                         deq.push_back(map[i][temp.row][temp.col]);
                         map[i][temp.row][temp.col].beenQueued = true;
-                        map[i][temp.row][temp.col].queuedFrom = temp.level;
+                        map[i][temp.row][temp.col].queuedFrom = to_string(temp.level);
                     }
                 }
             }
@@ -260,40 +274,54 @@ int main(int argc, char **argv)
              - A: a valid point on the map
              - B: a valid character (not '#')
              - C: a point that has not previously been queued
+             - D: is the hanger
+                - if yes, stores coordinates
              */
             if (temp.row > 0 && isValidQueueChar(map[temp.level][temp.row-1][temp.col].character) && !map[temp.level][temp.row-1][temp.col].beenQueued){
                 deq.push_back(map[temp.level][temp.row-1][temp.col]);
                 map[temp.level][temp.row-1][temp.col].beenQueued = true;
-                map[temp.level][temp.row-1][temp.col].queuedFrom = 'n';
+                map[temp.level][temp.row-1][temp.col].queuedFrom = "n";
                 if (deq.back().character == 'H'){
                     foundHanger = true;
+                    hangerRow = deq.back().row;
+                    hangerCol = deq.back().col;
+                    hangerLevel = deq.back().level;
                     continue;
                 }
             }
             if (temp.col < roomSize-1 && isValidQueueChar(map[temp.level][temp.row][temp.col+1].character) && !map[temp.level][temp.row][temp.col+1].beenQueued){
                 deq.push_back(map[temp.level][temp.row][temp.col+1]);
                 map[temp.level][temp.row][temp.col+1].beenQueued = true;
-                map[temp.level][temp.row][temp.col+1].queuedFrom = 'e';
+                map[temp.level][temp.row][temp.col+1].queuedFrom = "e";
                 if (deq.back().character == 'H'){
                     foundHanger = true;
+                    hangerRow = deq.back().row;
+                    hangerCol = deq.back().col;
+                    hangerLevel = deq.back().level;
                     continue;
                 }
             }
             if (temp.row < roomSize-1 && isValidQueueChar(map[temp.level][temp.row+1][temp.col].character) && !map[temp.level][temp.row+1][temp.col].beenQueued){
                 deq.push_back(map[temp.level][temp.row+1][temp.col]);
                 map[temp.level][temp.row+1][temp.col].beenQueued = true;
-                map[temp.level][temp.row+1][temp.col].queuedFrom = 's';
+                map[temp.level][temp.row+1][temp.col].queuedFrom = "s";
                 if (deq.back().character == 'H'){
                     foundHanger = true;
+                    hangerRow = deq.back().row;
+                    hangerCol = deq.back().col;
+                    hangerLevel = deq.back().level;
                     continue;
                 }
             }
             if (temp.col > 0 && isValidQueueChar(map[temp.level][temp.row][temp.col-1].character) && !map[temp.level][temp.row][temp.col-1].beenQueued){
                 deq.push_back(map[temp.level][temp.row][temp.col-1]);
                 map[temp.level][temp.row][temp.col-1].beenQueued = true;
-                map[temp.level][temp.row][temp.col-1].queuedFrom = 'w';
+                map[temp.level][temp.row][temp.col-1].queuedFrom = "w";
                 if (deq.back().character == 'H'){
                     foundHanger = true;
+                    hangerRow = deq.back().row;
+                    hangerCol = deq.back().col;
+                    hangerLevel = deq.back().level;
                     continue;
                 }
             }
@@ -302,14 +330,60 @@ int main(int argc, char **argv)
                     if (i != temp.level && map[i][temp.row][temp.col].character == 'E' && !map[i][temp.row][temp.col].beenQueued){
                         deq.push_back(map[i][temp.row][temp.col]);
                         map[i][temp.row][temp.col].beenQueued = true;
-                        map[i][temp.row][temp.col].queuedFrom = temp.level;
+                        map[i][temp.row][temp.col].queuedFrom = to_string(temp.level);
                     }
                 }
             }
         }
     }
     
+    // backwards routing (from hanger to start)
+    if (foundHanger){
+        bool foundPath = false;
+        point temp = map[hangerLevel][hangerRow][hangerCol];
+        string tempC = map[hangerLevel][hangerRow][hangerCol].queuedFrom;
+        while (!foundPath){
+            if (tempC == "n"){
+                if (map[temp.level][temp.row+1][temp.col].character == 'S'){
+                    foundPath = true;
+                }
+                map[temp.level][temp.row+1][temp.col].character = 'n';
+                temp = map[temp.level][temp.row+1][temp.col];
+            } else if (tempC == "e"){
+                if (map[temp.level][temp.row][temp.col-1].character == 'S'){
+                    foundPath = true;
+                }
+                map[temp.level][temp.row][temp.col-1].character = 'e';
+                temp = map[temp.level][temp.row][temp.col-1];
+            } else if (tempC == "s"){
+                if (map[temp.level][temp.row-1][temp.col].character == 'S'){
+                    foundPath = true;
+                }
+                map[temp.level][temp.row-1][temp.col].character = 's';
+                temp = map[temp.level][temp.row-1][temp.col];
+            } else if (tempC == "w"){
+                if (map[temp.level][temp.row][temp.col+1].character == 'S'){
+                    foundPath = true;
+                }
+                map[temp.level][temp.row][temp.col+1].character = 'w';
+                temp = map[temp.level][temp.row][temp.col+1];
+            } else {
+                int tempI = stoi(tempC);
+                map[tempI][temp.row][temp.col].character = tempC[0];
+                temp = map[tempI][temp.row][temp.col];
+            }
+        }
+    }
     
+    for (int i=0; i<globalArgs.numFloors; i++){
+        for (int j=0; j<globalArgs.roomSize; j++){
+            for (int k=0; k<globalArgs.roomSize; k++){
+                cout << map[i][j][k].character;
+            }
+            cout << endl;
+        }
+        cout << endl;
+    }
     return 0;
 }
 

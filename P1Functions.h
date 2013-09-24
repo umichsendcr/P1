@@ -8,7 +8,6 @@
 
 #ifndef P1_P1_h
 #define P1_P1_h
-#include "P1Functions.cpp"
 
 /*
  prints informative message to standard error if more or less than one --stack or
