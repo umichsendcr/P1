@@ -339,9 +339,10 @@ int main(int argc, char **argv)
     
     // backwards routing (from hanger to start)
     if (foundHanger){
+        deq.clear();
         bool foundPath = false;
         point temp = map[hangerLevel][hangerRow][hangerCol];
-        char tempC = map[hangerLevel][hangerRow][hangerCol].queuedFrom;
+        char tempC = temp.queuedFrom;
         while (!foundPath){
             if (tempC == 'n'){
                 if (map[temp.level][temp.row+1][temp.col].character == 'S'){
@@ -372,22 +373,31 @@ int main(int argc, char **argv)
                 temp = map[tempC][temp.row][temp.col];
             }
             tempC = temp.queuedFrom;
+            deq.push_back(temp);
         }
     }
     
     // output (map mode)
-    cout << globalArgs.roomSize << '\n' << globalArgs.numFloors << '\n';
-    for (int i=globalArgs.numFloors-1; i<=0; i++){
-        cout << "//level " << i << '\n';
-        for (int j=0; j<globalArgs.roomSize; j++){
-            for (int k=0; k<globalArgs.roomSize; k++){
-                cout << map[i][j][k].character;
+    if (globalArgs.outMode == 'M'){
+        cout << globalArgs.roomSize << '\n' << globalArgs.numFloors << '\n';
+        for (int i=globalArgs.numFloors-1; i>=0; i--){
+            cout << "//level " << i << '\n';
+            for (int j=0; j<globalArgs.roomSize; j++){
+                for (int k=0; k<globalArgs.roomSize; k++){
+                    cout << map[i][j][k].character;
+                }
+                cout << '\n';
             }
-            cout << '\n';
+        }
+    // output (coordinate mode)
+    } else {
+        cout << globalArgs.roomSize << '\n' << globalArgs.numFloors << '\n' << "//path taken" << '\n';
+        while (!deq.empty()) {
+            point temp = deq.back();
+            deq.pop_back();
+            cout << "(" << temp.row << "," << temp.col << "," << temp.level << "," << temp.character << ")" << '\n';
         }
     }
-    
-    //output (coordinate mode)
     
     return 0;
 }
