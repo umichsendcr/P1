@@ -375,15 +375,20 @@ int main(int argc, char **argv)
         }
     }
     
-    for (int i=0; i<globalArgs.numFloors; i++){
+    // output (map mode)
+    cout << globalArgs.roomSize << '\n' << globalArgs.numFloors << '\n';
+    for (int i=globalArgs.numFloors-1; i<=0; i++){
+        cout << "//level " << i << '\n';
         for (int j=0; j<globalArgs.roomSize; j++){
             for (int k=0; k<globalArgs.roomSize; k++){
                 cout << map[i][j][k].character;
             }
-            cout << endl;
+            cout << '\n';
         }
-        cout << endl;
     }
+    
+    //output (coordinate mode)
+    
     return 0;
 }
 
