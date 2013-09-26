@@ -4,6 +4,7 @@
 #include <sstream>
 #include <vector>
 #include <deque>
+#include <cstdlib>
 #include "P1Functions.h"
 
 using namespace std;
@@ -121,15 +122,14 @@ int main(int argc, char **argv)
     }
     
     // read input file (map mode)
-    int startRow, startCol, startLevel = 0;
+    int startRow = 0;
+    int startCol = 0;
+    int startLevel = 0;
     if (globalArgs.inMode == 'M'){
         int colIndex=0, rowIndex=0, floorIndex=(roomSize*numFloors)-1;
         while (getline(cin, line)){
-            if (line[0] == '/'){
-                continue;
-            }
             istringstream is (line);
-            while (is >> c) {
+            while (is >> c && line[0]!='/') {
                 if (isValidCharacter(c)){
                     point newPoint = {rowIndex%roomSize, colIndex%roomSize, floorIndex/roomSize, c, 0, false};
                     map[floorIndex/roomSize][rowIndex%roomSize][colIndex%roomSize] = newPoint;
@@ -190,7 +190,9 @@ int main(int argc, char **argv)
     deque<point> deq;
     deq.push_back(map[startLevel][startRow][startCol]);
     map[startLevel][startRow][startCol].beenQueued = true;
-    int hangerRow, hangerCol, hangerLevel = 0;
+    int hangerRow = 0;
+    int hangerCol = 0;
+    int hangerLevel = 0;
     bool foundHanger = false;
     
     // sorting algorithm (stack-based)
@@ -336,7 +338,6 @@ int main(int argc, char **argv)
             }
         }
     }
-    
     // backwards routing (from hanger to start)
     if (foundHanger){
         deq.clear();
@@ -369,8 +370,8 @@ int main(int argc, char **argv)
                 map[temp.level][temp.row][temp.col+1].character = 'w';
                 temp = map[temp.level][temp.row][temp.col+1];
             } else {
-                map[tempC][temp.row][temp.col].character = temp.level+48;
-                temp = map[tempC][temp.row][temp.col];
+                map[atoi(&tempC)][temp.row][temp.col].character = temp.level+48;
+                temp = map[atoi(&tempC)][temp.row][temp.col];
             }
             tempC = temp.queuedFrom;
             deq.push_back(temp);
