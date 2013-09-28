@@ -139,7 +139,7 @@ int main(int argc, char **argv)
                         startLevel = floorIndex/roomSize;
                     }
                     colIndex++;
-                    if (colIndex>0 && (colIndex%4 == 0)){
+                    if (colIndex>0 && (colIndex%roomSize == 0)){
                         rowIndex++;
                         floorIndex--;
                     }
@@ -160,7 +160,7 @@ int main(int argc, char **argv)
                 }
             }
         }
-        int x,y,z;
+        int x, y, z;
         char junk, c;
         while (getline(cin, line)){
             if (line[0] == '/'){
@@ -338,6 +338,7 @@ int main(int argc, char **argv)
             }
         }
     }
+    
     // backwards routing (from hanger to start)
     if (foundHanger){
         deq.clear();
